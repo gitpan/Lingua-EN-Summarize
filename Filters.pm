@@ -14,14 +14,19 @@ sub easyhtml {
 
 
 sub html {
-  my $text = shift;
+  my $html = shift;
+  my $text = '';
 
-  require HTML::TreeBuilder;
-  require HTML::FormatText;
-  my $tree = HTML::TreeBuilder->new();
-  $tree->parse( $text );
-  $tree->eof();
-  return HTML::FormatText->new( leftmargin => 0 )->format( $tree );
+  # closure!
+  my $callback = sub { $text .= shift };
+
+  require HTML::Parser;
+  my $parser = HTML::Parser->new( api_version => 3,
+				  text_h => [ $callback, "dtext" ] );
+  $parser->parse( $html );
+  $parser->eof();
+
+  return $text;
 }
 
 

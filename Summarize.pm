@@ -11,7 +11,7 @@ use vars qw($VERSION @ISA @EXPORT);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(summarize);
-$VERSION = '0.1';
+$VERSION = '0.2';
 
 
 sub summarize {
@@ -66,21 +66,22 @@ sub summarize {
 
   # Assemble the resulting phrases into the summary response.
   my $summary = '';
-  while (length $summary < $options{maxlength}) {
+  while (@clauses and length $summary < $options{maxlength}) {
     $summary .= " " . shift @clauses;
   }
-  $summary =~ s/^\s+//;
-  $summary =~ s/\s+/ /sg;
-  $summary =~ s/\s+$//;
 
 
   ### Done! Do any necessary postprocessing before returning.
 
   # Prettyprint the summary to make it look nice on a terminal, if requested.
   if ($options{wrap}) {
-    $Text::Wrap::columns = 75;   # Set the margin to a reasonable default.
-    $summary = wrap( 0, 0, $summary );
+    $Text::Wrap::columns = $options{wrap};
+    $summary = wrap( '', '', $summary );
   }
+
+  $summary =~ s/^\s+//mg;
+  $summary =~ s/[ \t]+/ /g;    # if we use \s, that screws up the wrapping
+  $summary =~ s/\s+$//mg;
 
   return $summary;
 }
@@ -140,8 +141,8 @@ works for the next version.
 
 =back
 
-Unlike the HTML::Summarize module (which is very cool, and worth a
-look), this module considers its input to be plain English text, and
+Unlike the HTML::Summarize module (which is quite interesting, and worth
+a look), this module considers its input to be plain English text, and
 doesn't try to gather any information from the formatting. Thus, without
 any cues from the document's format, the scheme that HTML::Summarize
 uses isn't applicable here. The current scheme goes something like this:
@@ -157,8 +158,8 @@ whichever is smaller."
 Needless to say, this is a very simple and not terribly universally
 effective scheme, but it's good enough for a first draft, and I'll bang
 on it more later. Like I said, it's not a scientific approach to the
-problem, but it's better than nothing, and I don't really need A.I.
-quality output from it.
+problem, but it's better than nothing (and often better than
+HTML::Summarize!), and I don't really need A.I. quality output from it.
 
 =head1 AUTHOR
 
